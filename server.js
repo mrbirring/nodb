@@ -1,4 +1,6 @@
-const io = require('socket.io')(3000, {
+const PORT = process.env.PORT || 3000;
+
+const io = require('socket.io')(PORT, {
   cors: { origin: '*' }
 });
 
@@ -15,6 +17,7 @@ io.on('connection', socket => {
     rooms[roomName] = [socket.id];
     socket.join(roomName);
     socket.emit('roomCreated', roomName);
+    console.log(`Room created: ${roomName}`);
   });
 
   socket.on('joinRoom', roomName => {
@@ -26,10 +29,12 @@ io.on('connection', socket => {
     socket.join(roomName);
     socket.emit('roomJoined', roomName);
     io.to(roomName).emit('message', { from: 'System', message: `${socket.id} joined` });
+    console.log(`Socket ${socket.id} joined room: ${roomName}`);
   });
 
   socket.on('message', ({ roomName, from, message }) => {
     io.to(roomName).emit('message', { from, message });
+    console.log(`Message to ${roomName}: ${from} - ${message}`);
   });
 
   socket.on('disconnect', () => {
